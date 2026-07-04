@@ -20,7 +20,7 @@ const state = {
   timerStartTime: 0,
   timerElapsed: 0,
   timerInterval: null,
-  eraseCount: 0,
+  mistakeCount: 0,
   isComplete: false
 };
 
@@ -149,15 +149,15 @@ function initGame(difficulty) {
   state.difficulty = difficulty;
   state.timerStarted = false;
   state.timerElapsed = 0;
-  state.eraseCount = 0;
+  state.mistakeCount = 0;
   state.isComplete = false;
 
   document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.diff === difficulty);
   });
 
-  updateEraseCounter();
   updateTimerDisplay();
+  updateMistakeCounter();
   updateNumpad();
   render();
 }
@@ -288,10 +288,22 @@ function placeNumber(num) {
   } else {
     state.board[state.selectedRow][state.selectedCol] = num;
     state.pencilMarks[state.selectedRow][state.selectedCol] = new Set();
+    if (num !== state.solution[state.selectedRow][state.selectedCol]) {
+      state.mistakeCount++;
+      if (state.timerStarted) {
+        state.timerStartTime -= 10000;
+      } else {
+        state.timerElapsed += 10000;
+      }
+    }
+    updateMistakeCounter();
   }
 
   updateCellDisplay();
   updateNumpad();
+  if (state.mode !== MODE.PENCIL) {
+    animateUnitCompletion(state.selectedRow, state.selectedCol);
+  }
   checkWin();
 }
 
@@ -306,9 +318,7 @@ function clearCell() {
   if (val === EMPTY && !hasMarks) return;
 
   if (val !== EMPTY) {
-    state.eraseCount++;
     if (!state.timerStarted) startTimer();
-    updateEraseCounter();
   }
 
   state.board[state.selectedRow][state.selectedCol] = EMPTY;
@@ -339,6 +349,62 @@ function updateNumpad() {
       btn.classList.remove('checked');
       btn.textContent = num;
     }
+  });
+}
+
+function animateUnitCompletion(row, col) {
+  if (state.board[row][col] !== state.solution[row][col]) return;
+
+  const cellEls = document.querySelectorAll('.cell');
+  const units = [];
+
+  let rowDone = true;
+  for (let c = 0; c < 9; c++) {
+    if (state.board[row][c] !== state.solution[row][c]) { rowDone = false; break; }
+  }
+  if (rowDone) {
+    const cells = [];
+    for (let c = 0; c < 9; c++) cells.push([row, c]);
+    units.push(cells);
+  }
+
+  let colDone = true;
+  for (let r = 0; r < 9; r++) {
+    if (state.board[r][col] !== state.solution[r][col]) { colDone = false; break; }
+  }
+  if (colDone) {
+    const cells = [];
+    for (let r = 0; r < 9; r++) cells.push([r, col]);
+    units.push(cells);
+  }
+
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  let boxDone = true;
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      if (state.board[r][c] !== state.solution[r][c]) { boxDone = false; break; }
+    }
+    if (!boxDone) break;
+  }
+  if (boxDone) {
+    const cells = [];
+    for (let r = br; r < br + 3; r++)
+      for (let c = bc; c < bc + 3; c++)
+        cells.push([r, c]);
+    units.push(cells);
+  }
+
+  units.forEach(unit => {
+    unit.forEach(([r, c], i) => {
+      const cell = cellEls[r * 9 + c];
+      cell.style.animationDelay = `${i * 70}ms`;
+      cell.classList.add('unit-complete');
+      cell.addEventListener('animationend', () => {
+        cell.style.animationDelay = '';
+        cell.classList.remove('unit-complete');
+      }, { once: true });
+    });
   });
 }
 
@@ -379,21 +445,18 @@ function updateTimerDisplay() {
     `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
+function updateMistakeCounter() {
+  const el = document.getElementById('mistake-counter');
+  if (el) {
+    el.textContent = `Erros: ${state.mistakeCount}`;
+  }
+}
+
 function formatTime(ms) {
   const totalSec = Math.floor(ms / 1000);
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
   return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-}
-
-function updateEraseCounter() {
-  const el = document.getElementById('erase-counter');
-  if (state.eraseCount > 0) {
-    const penalty = state.eraseCount * 15;
-    el.textContent = `Apagadas: ${state.eraseCount} (+${penalty}s)`;
-  } else {
-    el.textContent = 'Apagadas: 0';
-  }
 }
 
 function getHighScores() {
@@ -411,18 +474,13 @@ function saveHighScores(scores) {
 
 function registerScore() {
   const scores = getHighScores();
-  const penalty = state.eraseCount * 15000;
-  const finalScore = state.timerElapsed + penalty;
 
   scores[state.difficulty].push({
     time: state.timerElapsed,
-    penalty: penalty,
-    finalScore: finalScore,
-    erases: state.eraseCount,
     date: new Date().toISOString()
   });
 
-  scores[state.difficulty].sort((a, b) => a.finalScore - b.finalScore);
+  scores[state.difficulty].sort((a, b) => a.time - b.time);
   scores[state.difficulty] = scores[state.difficulty].slice(0, 5);
   saveHighScores(scores);
 }
@@ -435,17 +493,11 @@ function showCompletion() {
   title.textContent = 'Parabens!';
   registerScore();
 
-  const penalty = state.eraseCount * 15;
-  const finalMs = state.timerElapsed + state.eraseCount * 15000;
-
   body.innerHTML = `
     <div id="completion-overlay">
       <h2>Puzzle Completo!</h2>
       <div class="big-time">${formatTime(state.timerElapsed)}</div>
-      ${state.eraseCount > 0 ? `
-        <div class="penalty-info">+${penalty}s de penalidade (${state.eraseCount} apagadas)</div>
-        <p>Score final: <strong>${formatTime(finalMs)}</strong></p>
-      ` : '<p>Sem penalidades! Perfeito!</p>'}
+      <div>Erros: ${state.mistakeCount}</div>
       <button id="completion-btn">Novo Jogo</button>
     </div>
   `;
@@ -485,11 +537,8 @@ function showHighScores() {
         const medal = rank === 1 ? '#1' : rank === 2 ? '#2' : rank === 3 ? '#3' : `#${rank}`;
         html += `
           <li class="highscore-item">
-            <span><span class="highscore-rank">${medal}</span> ${formatTime(entry.finalScore)}</span>
-            <span>
-              <span class="highscore-time">${formatTime(entry.time)}</span>
-              ${entry.erases > 0 ? `<span class="highscore-penalty">+${entry.erases * 15}s</span>` : ''}
-            </span>
+            <span class="highscore-rank">${medal}</span>
+            <span class="highscore-time">${formatTime(entry.time)}</span>
           </li>
         `;
       });

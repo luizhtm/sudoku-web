@@ -21,7 +21,6 @@
   --cell-highlight: #e2e8f0;
   --pencil-color: #718096;
   --success: #38a169;
-  --eraser: #e53e3e;
   --radius: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
@@ -35,9 +34,9 @@ html, body {
 }
 
 #app {
-  max-width: 500px;
+  max-width: 560px;
   margin: 0 auto;
-  padding: 12px 12px 24px;
+  padding: 16px 16px 24px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -49,11 +48,11 @@ header {
 }
 
 h1 {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 800;
   letter-spacing: 4px;
   color: var(--text);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 #difficulty-bar {
@@ -63,11 +62,11 @@ h1 {
 }
 
 .diff-btn {
-  padding: 6px 18px;
+  padding: 7px 20px;
   border: 2px solid var(--border);
   background: var(--surface);
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   color: var(--text-secondary);
@@ -89,9 +88,9 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 4px;
-  margin-bottom: 4px;
-  font-size: 15px;
+  padding: 8px 4px;
+  margin-bottom: 6px;
+  font-size: 17px;
   font-weight: 600;
 }
 
@@ -100,9 +99,10 @@ h1 {
   color: var(--text);
 }
 
-#erase-counter {
-  color: var(--eraser);
+#mistake-counter {
+  color: var(--cell-error);
   font-weight: 700;
+  font-size: 17px;
 }
 
 #mode-bar {
@@ -121,11 +121,11 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 4px;
+  padding: 10px 8px;
   border: none;
   background: transparent;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   color: var(--text-secondary);
@@ -138,7 +138,7 @@ h1 {
 }
 
 .mode-icon {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
 }
 
@@ -153,7 +153,7 @@ h1 {
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
   width: 100%;
-  max-width: 460px;
+  max-width: 520px;
   aspect-ratio: 1;
   border: 2px solid var(--border-thick);
   user-select: none;
@@ -166,7 +166,7 @@ h1 {
   justify-content: center;
   position: relative;
   cursor: pointer;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 500;
   color: var(--cell-player);
   transition: background 0.08s;
@@ -210,6 +210,17 @@ h1 {
   color: var(--success);
 }
 
+.cell.unit-complete {
+  animation: unit-flash 1.5s ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes unit-flash {
+  0%   { background-color: transparent; }
+  40%  { background-color: rgba(49, 130, 206, 0.3); }
+  100% { background-color: transparent; }
+}
+
 .cell .pencil-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -226,7 +237,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--pencil-color);
   line-height: 1;
@@ -254,12 +265,12 @@ h1 {
 }
 
 .num-btn {
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   border: 2px solid var(--border);
   background: var(--surface);
   border-radius: var(--radius);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   cursor: pointer;
   color: var(--text);
@@ -292,10 +303,10 @@ h1 {
 }
 
 #action-bar button {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
   border-radius: var(--radius);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -392,7 +403,7 @@ h1 {
 
 .highscore-item {
   display: flex;
-  justify-content: space-between;
+  gap: 12px;
   align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
@@ -414,21 +425,6 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-.highscore-penalty {
-  font-size: 12px;
-  color: var(--eraser);
-  margin-left: 6px;
-}
-
-.highscore-diff {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-left: 8px;
-  padding: 2px 8px;
-  background: var(--bg);
-  border-radius: 10px;
-}
-
 .highscore-empty {
   text-align: center;
   color: var(--text-secondary);
@@ -443,13 +439,8 @@ h1 {
 
 #completion-overlay h2 {
   font-size: 24px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   color: var(--success);
-}
-
-#completion-overlay p {
-  color: var(--text-secondary);
-  margin-bottom: 16px;
 }
 
 #completion-overlay .big-time {
@@ -458,12 +449,6 @@ h1 {
   font-variant-numeric: tabular-nums;
   color: var(--text);
   margin: 12px 0;
-}
-
-#completion-overlay .penalty-info {
-  font-size: 14px;
-  color: var(--eraser);
-  margin-bottom: 16px;
 }
 
 #completion-overlay button {
@@ -484,7 +469,7 @@ h1 {
   }
 
   h1 {
-    font-size: 22px;
+    font-size: 24px;
     letter-spacing: 3px;
   }
 
@@ -494,36 +479,36 @@ h1 {
   }
 
   .cell {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .cell .pencil-num {
-    font-size: 8px;
+    font-size: 9px;
   }
 
   .num-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 17px;
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
   }
 
   .mode-btn {
-    font-size: 11px;
-    padding: 6px 2px;
+    font-size: 13px;
+    padding: 8px 4px;
   }
 
   .mode-icon {
-    font-size: 14px;
+    font-size: 15px;
   }
 }
 
 @media (min-width: 600px) {
   .cell {
-    font-size: 32px;
+    font-size: 36px;
   }
 
   .cell .pencil-num {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   #numpad {
@@ -531,8 +516,8 @@ h1 {
   }
 
   .num-btn {
-    width: 56px;
-    height: 56px;
-    font-size: 24px;
+    width: 60px;
+    height: 60px;
+    font-size: 26px;
   }
 }
