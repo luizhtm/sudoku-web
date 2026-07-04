@@ -295,6 +295,8 @@ function placeNumber(num) {
       } else {
         state.timerElapsed += 10000;
       }
+    } else {
+      removeRelatedPencilMarks(state.selectedRow, state.selectedCol, num);
     }
     updateMistakeCounter();
   }
@@ -406,6 +408,22 @@ function animateUnitCompletion(row, col) {
       }, { once: true });
     });
   });
+}
+
+function removeRelatedPencilMarks(row, col, num) {
+  for (let c = 0; c < 9; c++) {
+    state.pencilMarks[row][c].delete(num);
+  }
+  for (let r = 0; r < 9; r++) {
+    state.pencilMarks[r][col].delete(num);
+  }
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      state.pencilMarks[r][c].delete(num);
+    }
+  }
 }
 
 function checkWin() {
