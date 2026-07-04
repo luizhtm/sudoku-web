@@ -284,7 +284,7 @@ function placeNumber(num) {
   if (state.mode === MODE.PENCIL) {
     const marks = state.pencilMarks[state.selectedRow][state.selectedCol];
     if (marks.has(num)) marks.delete(num);
-    else marks.add(num);
+    else if (!isDefinitiveInUnit(state.selectedRow, state.selectedCol, num)) marks.add(num);
   } else {
     state.board[state.selectedRow][state.selectedCol] = num;
     state.pencilMarks[state.selectedRow][state.selectedCol] = new Set();
@@ -408,6 +408,23 @@ function animateUnitCompletion(row, col) {
       }, { once: true });
     });
   });
+}
+
+function isDefinitiveInUnit(row, col, num) {
+  for (let c = 0; c < 9; c++) {
+    if (state.board[row][c] === num) return true;
+  }
+  for (let r = 0; r < 9; r++) {
+    if (state.board[r][col] === num) return true;
+  }
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      if (state.board[r][c] === num) return true;
+    }
+  }
+  return false;
 }
 
 function removeRelatedPencilMarks(row, col, num) {
