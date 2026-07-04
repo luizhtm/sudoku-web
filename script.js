@@ -158,6 +158,7 @@ function initGame(difficulty) {
 
   updateEraseCounter();
   updateTimerDisplay();
+  updateNumpad();
   render();
 }
 
@@ -290,6 +291,7 @@ function eraseCell(row, col) {
   if (!state.timerStarted) startTimer();
 
   updateEraseCounter();
+  updateNumpad();
   updateCellDisplay();
   updateSelection();
 }
@@ -298,6 +300,7 @@ function placeNumber(num) {
   if (state.isComplete) return;
   if (state.selectedRow < 0 || state.selectedCol < 0) return;
   if (state.isGiven[state.selectedRow][state.selectedCol]) return;
+  if (state.mode !== MODE.PENCIL && isNumberComplete(num)) return;
 
   if (!state.timerStarted) startTimer();
 
@@ -311,6 +314,7 @@ function placeNumber(num) {
   }
 
   updateCellDisplay();
+  updateNumpad();
   checkWin();
 }
 
@@ -333,7 +337,32 @@ function clearCell() {
   state.board[state.selectedRow][state.selectedCol] = EMPTY;
   state.pencilMarks[state.selectedRow][state.selectedCol] = new Set();
 
+  updateNumpad();
   updateCellDisplay();
+}
+
+function isNumberComplete(num) {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (state.solution[r][c] === num && state.board[r][c] !== num) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function updateNumpad() {
+  document.querySelectorAll('.num-btn').forEach(btn => {
+    const num = parseInt(btn.dataset.num);
+    if (isNumberComplete(num)) {
+      btn.classList.add('checked');
+      btn.textContent = '✓';
+    } else {
+      btn.classList.remove('checked');
+      btn.textContent = num;
+    }
+  });
 }
 
 function checkWin() {

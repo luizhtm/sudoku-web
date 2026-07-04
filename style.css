@@ -281,6 +281,13 @@ h1 {
   background: var(--cell-selected);
 }
 
+.num-btn.checked {
+  border-color: var(--success);
+  background: var(--success);
+  color: white;
+  cursor: default;
+}
+
 #action-bar {
   display: flex;
   gap: 8px;
