@@ -137,10 +137,6 @@ h1 {
   color: white;
 }
 
-.mode-btn[data-mode="eraser"].active {
-  background: var(--eraser);
-}
-
 .mode-icon {
   font-size: 16px;
   font-weight: 800;

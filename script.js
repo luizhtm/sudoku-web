@@ -1,4 +1,4 @@
-const MODE = { DEFINITIVE: 'definitive', PENCIL: 'pencil', ERASER: 'eraser' };
+const MODE = { DEFINITIVE: 'definitive', PENCIL: 'pencil' };
 const EMPTY = 0;
 
 const DIFFICULTY = {
@@ -270,29 +270,6 @@ function onCellClick(row, col) {
 
   state.selectedRow = row;
   state.selectedCol = col;
-
-  if (state.mode === MODE.ERASER) {
-    eraseCell(row, col);
-    return;
-  }
-
-  updateSelection();
-}
-
-function eraseCell(row, col) {
-  if (state.isComplete) return;
-  if (state.isGiven[row][col]) return;
-  if (state.board[row][col] === EMPTY) return;
-
-  state.board[row][col] = EMPTY;
-  state.pencilMarks[row][col] = new Set();
-  state.eraseCount++;
-
-  if (!state.timerStarted) startTimer();
-
-  updateEraseCounter();
-  updateNumpad();
-  updateCellDisplay();
   updateSelection();
 }
 
@@ -563,7 +540,6 @@ function setupEventListeners() {
     switch (e.key) {
       case 'd': case 'D': state.mode = MODE.DEFINITIVE; break;
       case 'r': case 'R': state.mode = MODE.PENCIL; break;
-      case 'e': case 'E': state.mode = MODE.ERASER; break;
       case 'Backspace': case 'Delete': clearCell(); return;
     }
 
